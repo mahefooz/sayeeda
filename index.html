@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listen and Speak Practice - Choose Your Story</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #87CEEB 0%, #98FB98 50%, #FFB6C1 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            text-align: center;
+            padding: 25px 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: clamp(2em, 6vw, 3em);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            line-height: 1.2;
+        }
+
+        .header p {
+            margin: 15px 0 0 0;
+            font-size: clamp(1.1em, 4vw, 1.4em);
+            opacity: 0.95;
+        }
+
+        .intro-section {
+            background: #f8f9fa;
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 3px solid #e9ecef;
+        }
+
+        .intro-text {
+            font-size: clamp(1.1em, 4vw, 1.3em);
+            color: #2c3e50;
+            margin: 0 0 15px 0;
+            font-weight: 500;
+        }
+
+        .grade-info {
+            background: linear-gradient(45deg, #17a2b8, #20c997);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: clamp(1em, 3.5vw, 1.1em);
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .tasks-section {
+            padding: 30px 20px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: clamp(1.5em, 5vw, 2em);
+            color: #2c3e50;
+            margin: 0 0 25px 0;
+            font-weight: bold;
+        }
+
+        .tasks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .task-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            position: relative;
+        }
+
+        .task-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            border-color: #4ECDC4;
+        }
+
+        .task-card.available {
+            border-color: #28a745;
+        }
+
+        .task-card.coming-soon {
+            background: #f8f9fa;
+            cursor: default;
+            opacity: 0.7;
+        }
+
+        .task-card.coming-soon:hover {
+            transform: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: transparent;
+        }
+
+        .task-icon {
+            font-size: clamp(2.5em, 8vw, 3.5em);
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .task-title {
+            font-size: clamp(1.2em, 4.5vw, 1.4em);
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+            text-align: center;
+        }
+
+        .task-description {
+            font-size: clamp(0.95em, 3.5vw, 1.05em);
+            color: #666;
+            margin: 0 0 15px 0;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .task-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .grade-badge {
+            background: linear-gradient(45deg, #FF6B6B, #FF8E8E);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: clamp(0.8em, 3vw, 0.9em);
+            font-weight: bold;
+        }
+
+        .difficulty {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: clamp(0.8em, 3vw, 0.9em);
+            font-weight: 500;
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: clamp(0.75em, 2.8vw, 0.85em);
+            font-weight: bold;
+        }
+
+        .status-available {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-coming {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .features-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px 20px;
+            margin-top: 20px;
+        }
+
+        .features-title {
+            text-align: center;
+            font-size: clamp(1.3em, 4.5vw, 1.6em);
+            color: #2c3e50;
+            margin: 0 0 20px 0;
+            font-weight: bold;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .feature-item {
+            background: white;
+            padding: 20px 15px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            font-size: clamp(1.8em, 6vw, 2.2em);
+            margin-bottom: 10px;
+        }
+
+        .feature-text {
+            font-size: clamp(0.9em, 3.5vw, 1em);
+            color: #555;
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .footer p {
+            margin: 0;
+            font-size: clamp(0.9em, 3.5vw, 1em);
+            opacity: 0.9;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .tasks-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .task-meta {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Listen and Speak Practice Hub</h1>
+            <p>Choose your story and start learning!</p>
+        </div>
+
+        <div class="intro-section">
+            <div class="intro-text">
+                Welcome to your listen and speak practice center! Click on any story below to start learning.
+            </div>
+            <div class="grade-info">
+                🎓 Grade 3 Level Stories
+            </div>
+        </div>
+
+        <div class="tasks-section">
+            <h2 class="section-title">📖 Available Stories</h2>
+            
+            <div class="tasks-grid">
+                <!-- Task 1: The Wise Little Sparrow (Available) -->
+                <a href="#" class="task-card available" onclick="openSparrowStory()">
+                    <div class="status-badge status-available">✅ Ready</div>
+                    <div class="task-icon">🐦</div>
+                    <h3 class="task-title">The Wise Little Sparrow</h3>
+                    <p class="task-description">
+                        Learn about a brave little sparrow who helps save his tree from a snake. Practice listening and speaking!
+                    </p>
+                    <div class="task-meta">
+                        <span class="grade-badge">Grade 3</span>
+                        <span class="difficulty">⭐ Easy</span>
+                    </div>
+                </a>
+
+                <!-- Task 2: Coming Soon -->
+                <div class="task-card coming-soon">
+                    <div class="status-badge status-coming">🔜 Soon</div>
+                    <div class="task-icon">🦁</div>
+                    <h3 class="task-title">The Kind Lion</h3>
+                    <p class="task-description">
+                        A gentle lion learns about friendship and kindness in the jungle. Coming very soon!
+                    </p>
+                    <div class="task-meta">
+                        <span class="grade-badge">Grade 3</span>
+                        <span class="difficulty">⭐ Easy</span>
+                    </div>
+                </div>
+
+                <!-- Task 3: Coming Soon -->
+                <div class="task-card coming-soon">
+                    <div class="status-badge status-coming">🔜 Soon</div>
+                    <div class="task-icon">🌟</div>
+                    <h3 class="task-title">The Magic Paintbrush</h3>
+                    <p class="task-description">
+                        A magical story about a young artist who discovers a paintbrush that brings drawings to life!
+                    </p>
+                    <div class="task-meta">
+                        <span class="grade-badge">Grade 3</span>
+                        <span class="difficulty">⭐⭐ Medium</span>
+                    </div>
+                </div>
+
+                <!-- Task 4: Coming Soon -->
+                <div class="task-card coming-soon">
+                    <div class="status-badge status-coming">🔜 Soon</div>
+                    <div class="task-icon">🏰</div>
+                    <h3 class="task-title">The Helpful Dragon</h3>
+                    <p class="task-description">
+                        Meet a friendly dragon who helps villagers and learns that being different is wonderful!
+                    </p>
+                    <div class="task-meta">
+                        <span class="grade-badge">Grade 3</span>
+                        <span class="difficulty">⭐⭐ Medium</span>
+                    </div>
+                </div>
+
+                <!-- Task 5: Coming Soon -->
+                <div class="task-card coming-soon">
+                    <div class="status-badge status-coming">🔜 Soon</div>
+                    <div class="task-icon">🌊</div>
+                    <h3 class="task-title">The Ocean Adventure</h3>
+                    <p class="task-description">
+                        Join a brave little fish on an underwater adventure to find the lost treasure of the coral reef!
+                    </p>
+                    <div class="task-meta">
+                        <span class="grade-badge">Grade 3</span>
+                        <span class="difficulty">⭐⭐⭐ Hard</span>
+                    </div>
+                </div>
+
+                <!-- Task 6: Coming Soon -->
+                <div class="task-card coming-soon">
+                    <div class="status-badge status-coming">🔜 Soon</div>
+                    <div class="task-icon">🚀</div>
+                    <h3 class="task-title">Space Friends</h3>
+                    <p class="task-description">
+                        Blast off to space and meet friendly aliens who teach us about planets and stars!
+                    </p>
+                    <div class="task-meta">
+                        <span class="grade-badge">Grade 3</span>
+                        <span class="difficulty">⭐⭐⭐ Hard</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="features-section">
+            <h3 class="features-title">🎯 What You'll Learn</h3>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">👂</div>
+                    <p class="feature-text">Listen & Learn</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🗣️</div>
+                    <p class="feature-text">Speaking Practice</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📱</div>
+                    <p class="feature-text">Record Yourself</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">⭐</div>
+                    <p class="feature-text">Build Confidence</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>💝 Have fun learning! Remember to practice reading every day.</p>
+        </div>
+    </div>
+
+    <script>
+        function openSparrowStory() {
+            // In a real implementation, this would navigate to the sparrow story page
+            // For now, we'll show an alert
+            const userConfirmed = confirm('🐦 Ready to start "The Wise Little Sparrow" story?\n\nThis will open your reading practice session!');
+            
+            if (userConfirmed) {
+                // Here you would navigate to the actual story page
+                // window.location.href = 'sparrow-story.html';
+                alert('🎉 Great! In a real app, this would open the Sparrow story.\n\n📝 For teachers: Create separate HTML files for each story and link them here.');
+            }
+        }
+
+        // Add click animations
+        document.querySelectorAll('.task-card.available').forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Add a little animation on click
+                this.style.transform = 'scale(0.98)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+            });
+        });
+
+        // Show info for coming soon cards
+        document.querySelectorAll('.task-card.coming-soon').forEach(card => {
+            card.addEventListener('click', function(e) {
+                const title = this.querySelector('.task-title').textContent;
+                alert(`📅 "${title}" is coming soon!\n\n🚀 We're working hard to bring you more exciting stories. Check back later!`);
+            });
+        });
+
+        // Add some welcome interaction
+        window.addEventListener('load', function() {
+            console.log('📚 Reading Practice Hub loaded successfully!');
+            
+            // Optional: Show welcome message for first-time users
+            const hasVisited = localStorage.getItem('hasVisitedReadingHub');
+            if (!hasVisited) {
+                setTimeout(() => {
+                    const welcomeMsg = confirm('🎉 Welcome to Reading Practice Hub!\n\n👆 Tap on "The Wise Little Sparrow" to start your first story!\n\nWould you like to start now?');
+                    if (welcomeMsg) {
+                        openSparrowStory();
+                    }
+                    localStorage.setItem('hasVisitedReadingHub', 'true');
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>
