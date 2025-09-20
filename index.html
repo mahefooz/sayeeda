@@ -401,14 +401,10 @@
     <script>
         function openSparrowStory() {
             // In a real implementation, this would navigate to the sparrow story page
-            // For now, we'll show an alert
-            const userConfirmed = confirm('🐦 Ready to start "The Wise Little Sparrow" story?\n\nThis will open your reading practice session!');
+            window.location.href = 'sparrow-story.html';
             
-            if (userConfirmed) {
-                // Here you would navigate to the actual story page
-                // window.location.href = 'sparrow-story.html';
-                alert('🎉 Great! In a real app, this would open the Sparrow story.\n\n📝 For teachers: Create separate HTML files for each story and link them here.');
-            }
+            // For demo purposes, just highlight the card
+            console.log('Opening The Wise Little Sparrow story...');
         }
 
         // Add click animations
@@ -422,29 +418,20 @@
             });
         });
 
-        // Show info for coming soon cards
+        // Coming soon cards - just visual feedback
         document.querySelectorAll('.task-card.coming-soon').forEach(card => {
             card.addEventListener('click', function(e) {
-                const title = this.querySelector('.task-title').textContent;
-                alert(`📅 "${title}" is coming soon!\n\n🚀 We're working hard to bring you more exciting stories. Check back later!`);
+                // Just add visual feedback for coming soon items
+                this.style.opacity = '0.5';
+                setTimeout(() => {
+                    this.style.opacity = '0.7';
+                }, 200);
             });
         });
 
-        // Add some welcome interaction
+        // Simple load confirmation
         window.addEventListener('load', function() {
             console.log('📚 Reading Practice Hub loaded successfully!');
-            
-            // Optional: Show welcome message for first-time users
-            const hasVisited = localStorage.getItem('hasVisitedReadingHub');
-            if (!hasVisited) {
-                setTimeout(() => {
-                    const welcomeMsg = confirm('🎉 Welcome to Reading Practice Hub!\n\n👆 Tap on "The Wise Little Sparrow" to start your first story!\n\nWould you like to start now?');
-                    if (welcomeMsg) {
-                        openSparrowStory();
-                    }
-                    localStorage.setItem('hasVisitedReadingHub', 'true');
-                }, 1000);
-            }
         });
     </script>
 </body>
