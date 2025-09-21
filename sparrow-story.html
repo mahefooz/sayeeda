@@ -725,7 +725,7 @@
                 this.updateProgress();
                 
                 const utterance = new SpeechSynthesisUtterance(this.sentences[this.currentSentence]);
-                utterance.rate = 0.5;
+                utterance.rate = 0.4;
                 utterance.pitch = 1.0;
                 utterance.volume = 1;
 
@@ -750,7 +750,7 @@
                             this.currentSentence++;
                             this.currentStep++;
                             this.speakCurrentSentence();
-                        }, 1500);
+                        }, 2500);
                     }
                 };
 
