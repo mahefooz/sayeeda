@@ -300,8 +300,8 @@
                 </a>
 
                 <!-- Task 2: Coming Soon -->
-                <div class="task-card coming-soon">
-                    <div class="status-badge status-coming">🔜 Soon</div>
+                <a href="#" class="task-card available" onclick="openLionStory()">
+                    <div class="status-badge status-available">✅ Ready</div>
                     <div class="task-icon">🦁</div>
                     <h3 class="task-title">The Kind Lion</h3>
                     <p class="task-description">
@@ -311,7 +311,7 @@
                         <span class="grade-badge">Grade 3</span>
                         <span class="difficulty">⭐ Easy</span>
                     </div>
-                </div>
+                </a>
 
                 <!-- Task 3: Coming Soon -->
                 <div class="task-card coming-soon">
@@ -405,6 +405,14 @@
             
             // For demo purposes, just highlight the card
             console.log('Opening The Wise Little Sparrow story...');
+        }
+
+        function openLionStory() {
+            // In a real implementation, this would navigate to the sparrow story page
+            window.location.href = 'lion-story.html';
+            
+            // For demo purposes, just highlight the card
+            console.log('Opening The Kind Lion story...');
         }
 
         // Add click animations
