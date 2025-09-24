@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Kind Lion - Interactive Reading</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background: linear-gradient(135deg, #FFE5B4 0%, #98FB98 50%, #87CEEB 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 100%;
+            width: 100%;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #FFA500, #FF6347);
+            color: white;
+            text-align: center;
+            padding: 20px 15px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: clamp(1.8em, 6vw, 2.5em);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            line-height: 1.2;
+        }
+
+        .header h2 {
+            margin: 8px 0 0 0;
+            font-size: clamp(1em, 3.5vw, 1.2em);
+            opacity: 0.9;
+        }
+
+        .camera-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-bottom: 3px solid #e9ecef;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .camera-preview {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 280px;
+        }
+
+        .camera-video {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 4/3;
+            object-fit: cover;
+            display: block;
+        }
+
+        .camera-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            width: 100%;
+        }
+
+        .camera-btn {
+            padding: 15px 25px;
+            font-size: clamp(1em, 4vw, 1.2em);
+            font-weight: bold;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            width: 100%;
+            max-width: 280px;
+            touch-action: manipulation;
+        }
+
+        .start-camera-btn {
+            background: linear-gradient(45deg, #28a745, #34ce57);
+        }
+
+        .record-btn {
+            background: linear-gradient(45deg, #dc3545, #e74c3c);
+        }
+
+        .record-btn.waiting {
+            background: linear-gradient(45deg, #17a2b8, #20c997);
+            animation: gentle-pulse 2s infinite;
+        }
+
+        .stop-record-btn {
+            background: linear-gradient(45deg, #6c757d, #5a6268);
+        }
+
+        @keyframes gentle-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .camera-btn:active {
+            transform: scale(0.98);
+        }
+
+        .camera-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .recording-indicator {
+            display: none;
+            color: #dc3545;
+            font-weight: bold;
+            font-size: clamp(1em, 4vw, 1.1em);
+            animation: pulse 1s infinite;
+            text-align: center;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .camera-error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            color: #721c24;
+            font-size: clamp(0.9em, 3.5vw, 1em);
+            display: none;
+        }
+
+        .camera-help {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            color: #856404;
+            font-size: clamp(0.85em, 3vw, 0.95em);
+            display: none;
+        }
+
+        .permission-steps {
+            margin-top: 10px;
+        }
+
+        .permission-steps ol {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        .permission-steps li {
+            margin: 5px 0;
+        }
+
+        .mode-indicator {
+            padding: 18px 15px;
+            text-align: center;
+            font-size: clamp(1.1em, 4.5vw, 1.4em);
+            font-weight: bold;
+            color: white;
+            transition: all 0.5s ease;
+        }
+
+        .mode-indicator.listen-mode {
+            background: linear-gradient(45deg, #FFA500, #FF7F50);
+        }
+
+        .mode-indicator.speak-mode {
+            background: linear-gradient(45deg, #32CD32, #90EE90);
+        }
+
+        .mode-indicator.waiting-mode {
+            background: linear-gradient(45deg, #17a2b8, #20c997);
+        }
+
+        .progress-section {
+            padding: 15px;
+            background: #f8f9fa;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #32CD32, #228B22);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 6px;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: clamp(0.9em, 3.5vw, 1.1em);
+            color: #555;
+            margin: 5px 0;
+        }
+
+        .video-area {
+            min-height: 70vh;
+            padding: 20px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+            position: relative;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        .text-display {
+            font-size: clamp(1.4em, 5.5vw, 2em);
+            line-height: 1.8;
+            text-align: center;
+            max-width: 100%;
+            color: #2c3e50;
+            font-weight: 500;
+            width: 100%;
+        }
+
+        .sentence {
+            display: block;
+            margin: 25px 0;
+            padding: 18px 15px;
+            border-radius: 12px;
+            transition: all 0.8s ease;
+            opacity: 0.4;
+            scroll-margin-top: 80px;
+        }
+
+        .sentence.current {
+            background: linear-gradient(45deg, #fff8dc, #fffacd);
+            color: #ff8c00;
+            transform: scale(1.05);
+            font-weight: bold;
+            border: 3px solid #ff8c00;
+            opacity: 1;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
+        }
+
+        .sentence.completed {
+            opacity: 0.7;
+            color: #228b22;
+        }
+
+        .lion-icon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: clamp(2.5em, 8vw, 3.5em);
+            animation: roar 4s ease-in-out infinite;
+        }
+
+        @keyframes roar {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(-3deg); }
+        }
+
+        .tree-decoration {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            font-size: clamp(2em, 6vw, 3em);
+            opacity: 0.7;
+        }
+
+        .controls {
+            padding: 20px 15px;
+            text-align: center;
+            background: #f8f9fa;
+        }
+
+        .start-btn {
+            padding: 18px 35px;
+            font-size: clamp(1.1em, 4.5vw, 1.3em);
+            font-weight: bold;
+            background: linear-gradient(45deg, #28a745, #34ce57);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 300px;
+            touch-action: manipulation;
+        }
+
+        .start-btn:active {
+            transform: scale(0.98);
+        }
+
+        .start-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .completion-message {
+            background: linear-gradient(45deg, #28a745, #34ce57);
+            color: white;
+            padding: 20px 15px;
+            text-align: center;
+            font-size: clamp(1.1em, 4vw, 1.3em);
+            font-weight: bold;
+            display: none;
+        }
+
+        .instructions {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 15px;
+            border-radius: 0 10px 10px 0;
+            font-size: clamp(0.9em, 3.5vw, 1.1em);
+        }
+
+        .waiting-message {
+            background: #e8f5e8;
+            border: 2px solid #28a745;
+            border-radius: 10px;
+            padding: 20px 15px;
+            margin: 15px;
+            text-align: center;
+            font-size: clamp(1em, 4vw, 1.2em);
+            font-weight: bold;
+            color: #155724;
+            display: none;
+        }
+
+        /* Mobile-specific optimizations */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+            
+            .container {
+                border-radius: 10px;
+            }
+            
+            .header {
+                padding: 15px 10px;
+            }
+            
+            .camera-section {
+                padding: 12px;
+            }
+            
+            .video-area {
+                min-height: 60vh;
+                padding: 15px 10px;
+            }
+            
+            .sentence {
+                margin: 20px 0;
+                padding: 15px 12px;
+            }
+            
+            .controls {
+                padding: 15px 10px;
+            }
+        }
+
+        /* Landscape mobile optimization */
+        @media (max-height: 600px) and (orientation: landscape) {
+            .video-area {
+                min-height: 50vh;
+            }
+            
+            .sentence {
+                margin: 15px 0;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🦁 The Kind Lion</h1>
+            <h2>Interactive Reading Practice</h2>
+        </div>
+
+        <div class="camera-section">
+            <div class="camera-preview">
+                <video class="camera-video" id="cameraVideo" autoplay muted playsinline></video>
+            </div>
+            
+            <div class="camera-error" id="cameraError">
+                📱 <strong>Camera Access Needed:</strong> Please allow camera permission when prompted by your browser.
+                <div class="permission-steps">
+                    <strong>If you see a permission popup:</strong>
+                    <ol>
+                        <li>Click "Allow" or "Yes"</li>
+                        <li>Look for camera icon in address bar</li>
+                        <li>Click it and select "Allow"</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="camera-help" id="cameraHelp">
+                📋 <strong>How to enable camera:</strong>
+                <div class="permission-steps">
+                    <ol>
+                        <li>Tap the <strong>🔒</strong> or <strong>ℹ️</strong> icon in your browser's address bar</li>
+                        <li>Find "Camera" permission</li>
+                        <li>Change it to "Allow"</li>
+                        <li>Refresh this page</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="camera-controls">
+                <button class="camera-btn start-camera-btn" id="startCameraBtn">
+                    📹 Start Camera
+                </button>
+                <button class="camera-btn record-btn" id="recordBtn" disabled>
+                    🔴 Start Recording & Speak Mode
+                </button>
+                <div class="recording-indicator" id="recordingIndicator">
+                    🔴 RECORDING YOUR READING...
+                </div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            📱 <strong>Steps:</strong> 1) Start Camera 2) Begin Story (Listen Mode) 3) When ready, click "Start Recording" to begin speaking!
+        </div>
+
+        <div class="mode-indicator listen-mode" id="modeIndicator">
+            🎧 Ready to Listen - Click Start Story
+        </div>
+
+        <div class="waiting-message" id="waitingMessage">
+            🎉 Listen mode complete! Now click "Start Recording" to begin reading practice.
+        </div>
+
+        <div class="progress-section">
+            <div class="progress-text" id="progressText">Ready to Start</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div class="video-area" id="videoArea">
+            <div class="lion-icon">🦁</div>
+            <div class="tree-decoration">🌳</div>
+            
+            <div class="text-display" id="textDisplay">
+                <div class="sentence" id="sentence-0">There was a big lion who lived in the forest.</div>
+                <div class="sentence" id="sentence-1">All the animals were afraid of him.</div>
+                <div class="sentence" id="sentence-2">One day, a small rabbit got hurt.</div>
+                <div class="sentence" id="sentence-3">The lion saw the rabbit crying.</div>
+                <div class="sentence" id="sentence-4">The kind lion helped the little rabbit.</div>
+                <div class="sentence" id="sentence-5">He took the rabbit to a safe place.</div>
+                <div class="sentence" id="sentence-6">Soon all animals became his friends.</div>
+                <div class="sentence" id="sentence-7">The lion was happy to be kind and helpful.</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="start-btn" id="startBtn">🎬 Start Story</button>
+        </div>
+
+        <div class="completion-message" id="completionMessage">
+            ✅ Great job! Your reading practice video has been saved.
+        </div>
+    </div>
+
+    <script>
+        class LionStoryVideo {
+            constructor() {
+                this.sentences = [
+                    "There was a big lion who lived in the forest.",
+                    "All the animals were afraid of him.",
+                    "One day, a small rabbit got hurt.",
+                    "The lion saw the rabbit crying.",
+                    "The kind lion helped the little rabbit.",
+                    "He took the rabbit to a safe place.",
+                    "Soon all animals became his friends.",
+                    "The lion was happy to be kind and helpful."
+                ];
+                
+                this.currentSentence = 0;
+                this.currentMode = 'waiting';
+                this.isPlaying = false;
+                this.speechSynth = window.speechSynthesis;
+                this.totalSteps = this.sentences.length * 2;
+                this.currentStep = 0;
+                this.listenModeComplete = false;
+                
+                // Camera and recording
+                this.stream = null;
+                this.mediaRecorder = null;
+                this.recordedChunks = [];
+                this.isRecording = false;
+                
+                this.initializeElements();
+                this.setupEventListeners();
+                this.loadVoices();
+            }
+
+            initializeElements() {
+                this.startBtn = document.getElementById('startBtn');
+                this.modeIndicator = document.getElementById('modeIndicator');
+                this.progressText = document.getElementById('progressText');
+                this.progressFill = document.getElementById('progressFill');
+                this.completionMessage = document.getElementById('completionMessage');
+                this.waitingMessage = document.getElementById('waitingMessage');
+                this.sentenceElements = document.querySelectorAll('.sentence');
+                this.videoArea = document.getElementById('videoArea');
+                
+                // Camera elements
+                this.cameraVideo = document.getElementById('cameraVideo');
+                this.startCameraBtn = document.getElementById('startCameraBtn');
+                this.recordBtn = document.getElementById('recordBtn');
+                this.recordingIndicator = document.getElementById('recordingIndicator');
+                this.cameraError = document.getElementById('cameraError');
+                this.cameraHelp = document.getElementById('cameraHelp');
+            }
+
+            setupEventListeners() {
+                this.startBtn.addEventListener('click', () => this.startListenMode());
+                this.startCameraBtn.addEventListener('click', () => this.startCamera());
+                this.recordBtn.addEventListener('click', () => this.startRecordingAndSpeakMode());
+            }
+
+            loadVoices() {
+                if (this.speechSynth.getVoices().length === 0) {
+                    this.speechSynth.addEventListener('voiceschanged', () => {
+                        console.log('Voices loaded');
+                    });
+                }
+            }
+
+            async startCamera() {
+                this.cameraError.style.display = 'none';
+                this.cameraHelp.style.display = 'none';
+                
+                this.startCameraBtn.textContent = '⏳ Requesting Camera...';
+                this.startCameraBtn.disabled = true;
+
+                try {
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                        throw new Error('Camera not supported in this browser');
+                    }
+
+                    const constraints = {
+                        video: { 
+                            facingMode: 'user',
+                            width: { ideal: 640, max: 1280 },
+                            height: { ideal: 480, max: 720 }
+                        },
+                        audio: true
+                    };
+
+                    this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    
+                    this.cameraVideo.srcObject = this.stream;
+                    this.startCameraBtn.textContent = '✅ Camera Ready';
+                    this.startCameraBtn.style.background = '#28a745';
+                    
+                    this.cameraError.style.display = 'none';
+                    this.cameraHelp.style.display = 'none';
+                    
+                } catch (error) {
+                    console.error('Camera access error:', error);
+                    
+                    this.startCameraBtn.textContent = '📹 Try Camera Again';
+                    this.startCameraBtn.disabled = false;
+                    
+                    if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                        this.cameraError.style.display = 'block';
+                        setTimeout(() => {
+                            this.cameraHelp.style.display = 'block';
+                        }, 3000);
+                    } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+                        this.showCustomError('📱 No camera found on this device. You can still use the app without recording.');
+                    } else if (error.name === 'NotSupportedError') {
+                        this.showCustomError('📱 Camera not supported in this browser. Try opening in Chrome or Safari.');
+                    } else {
+                        this.cameraError.style.display = 'block';
+                        this.cameraHelp.style.display = 'block';
+                    }
+                }
+            }
+
+            showCustomError(message) {
+                this.cameraError.innerHTML = message;
+                this.cameraError.style.display = 'block';
+            }
+
+            startRecordingAndSpeakMode() {
+                if (!this.listenModeComplete) {
+                    alert('Please complete the Listen Mode first by clicking "Start Story"!');
+                    return;
+                }
+
+                if (!this.stream) {
+                    const proceedAnyway = confirm('Camera not available. Do you want to continue with speaking practice without recording?');
+                    if (proceedAnyway) {
+                        this.startSpeakMode();
+                        return;
+                    } else {
+                        this.cameraHelp.style.display = 'block';
+                        return;
+                    }
+                }
+
+                this.startRecording();
+                this.startSpeakMode();
+            }
+
+            startRecording() {
+                this.recordedChunks = [];
+                this.mediaRecorder = new MediaRecorder(this.stream, {
+                    mimeType: 'video/webm;codecs=vp8,opus'
+                });
+                
+                this.mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        this.recordedChunks.push(event.data);
+                    }
+                };
+
+                this.mediaRecorder.onstop = () => {
+                    this.saveRecording();
+                };
+
+                this.mediaRecorder.start();
+                this.isRecording = true;
+                this.recordBtn.textContent = '⏹️ Stop Recording';
+                this.recordBtn.className = 'camera-btn stop-record-btn';
+                this.recordingIndicator.style.display = 'block';
+            }
+
+            stopRecording() {
+                if (this.mediaRecorder && this.isRecording) {
+                    this.mediaRecorder.stop();
+                    this.isRecording = false;
+                    this.recordBtn.textContent = '🔴 Start Recording & Speak Mode';
+                    this.recordBtn.className = 'camera-btn record-btn';
+                    this.recordingIndicator.style.display = 'none';
+                }
+            }
+
+            saveRecording() {
+                const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `lion-reading-${new Date().toISOString().slice(0,16).replace(/:/g,'-')}.webm`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            startListenMode() {
+                this.isPlaying = true;
+                this.currentMode = 'listen';
+                this.startBtn.disabled = true;
+                this.startBtn.textContent = '🎧 Listen Mode Playing...';
+                this.waitingMessage.style.display = 'none';
+                
+                this.currentSentence = 0;
+                this.currentStep = 0;
+                
+                this.clearAllHighlights();
+                this.updateModeIndicator();
+                this.speakCurrentSentence();
+            }
+
+            speakCurrentSentence() {
+                if (this.currentSentence >= this.sentences.length) {
+                    this.completeListenMode();
+                    return;
+                }
+
+                this.highlightCurrentSentence();
+                this.scrollToCurrentSentence();
+                this.updateProgress();
+                
+                const utterance = new SpeechSynthesisUtterance(this.sentences[this.currentSentence]);
+                utterance.rate = 0.5; // Slower speech rate
+                utterance.pitch = 1.0;
+                utterance.volume = 1;
+
+                const voices = this.speechSynth.getVoices();
+                const femaleVoice = voices.find(voice => 
+                    voice.lang.startsWith('en') && (
+                        voice.name.toLowerCase().includes('female') || 
+                        voice.name.toLowerCase().includes('samantha') ||
+                        voice.name.toLowerCase().includes('susan') ||
+                        voice.name.toLowerCase().includes('google')
+                    )
+                );
+                
+                if (femaleVoice) {
+                    utterance.voice = femaleVoice;
+                }
+
+                utterance.onend = () => {
+                    if (this.isPlaying && this.currentMode === 'listen') {
+                        this.markSentenceCompleted();
+                        setTimeout(() => {
+                            this.currentSentence++;
+                            this.currentStep++;
+                            this.speakCurrentSentence();
+                        }, 2500); // Longer pause between sentences
+                    }
+                };
+
+                this.speechSynth.speak(utterance);
+            }
+
+            completeListenMode() {
+                this.listenModeComplete = true;
+                this.currentMode = 'waiting';
+                this.clearAllHighlights();
+                this.updateModeIndicator();
+                this.waitingMessage.style.display = 'block';
+                
+                this.recordBtn.disabled = false;
+                this.recordBtn.className = 'camera-btn record-btn waiting';
+                
+                if (this.stream) {
+                    this.recordBtn.textContent = '🔴 Start Recording & Speak Mode';
+                } else {
+                    this.recordBtn.textContent = '🗣️ Start Speaking Practice';
+                }
+                
+                this.startBtn.disabled = false;
+                this.startBtn.textContent = '🔄 Restart Listen Mode';
+                
+                this.videoArea.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            startSpeakMode() {
+                this.currentMode = 'speak';
+                this.currentSentence = 0;
+                this.currentStep = this.sentences.length;
+                this.clearAllHighlights();
+                this.updateModeIndicator();
+                this.waitingMessage.style.display = 'none';
+                this.recordBtn.className = 'camera-btn stop-record-btn';
+                
+                this.showSentenceForSpeaking();
+            }
+
+            showSentenceForSpeaking() {
+                if (this.currentSentence >= this.sentences.length) {
+                    this.completeVideo();
+                    return;
+                }
+
+                this.highlightCurrentSentence();
+                this.scrollToCurrentSentence();
+                this.updateProgress();
+                
+                setTimeout(() => {
+                    this.markSentenceCompleted();
+                    setTimeout(() => {
+                        this.currentSentence++;
+                        this.currentStep++;
+                        this.showSentenceForSpeaking();
+                    }, 1200); // Longer pause after completion
+                }, 6000); // More time per sentence (6 seconds)
+            }
+
+            highlightCurrentSentence() {
+                this.sentenceElements.forEach((el, index) => {
+                    el.classList.remove('current');
+                    if (index === this.currentSentence) {
+                        el.classList.add('current');
+                    }
+                });
+            }
+
+            scrollToCurrentSentence() {
+                const currentElement = document.getElementById(`sentence-${this.currentSentence}`);
+                if (currentElement) {
+                    currentElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+            }
+
+            markSentenceCompleted() {
+                if (this.sentenceElements[this.currentSentence]) {
+                    this.sentenceElements[this.currentSentence].classList.remove('current');
+                    this.sentenceElements[this.currentSentence].classList.add('completed');
+                }
+            }
+
+            clearAllHighlights() {
+                this.sentenceElements.forEach(el => {
+                    el.classList.remove('current', 'completed');
+                });
+            }
+
+            updateModeIndicator() {
+                if (this.currentMode === 'listen') {
+                    this.modeIndicator.className = 'mode-indicator listen-mode';
+                    this.modeIndicator.textContent = '🎧 Listen Mode - Narrator Reading';
+                } else if (this.currentMode === 'speak') {
+                    this.modeIndicator.className = 'mode-indicator speak-mode';
+                    this.modeIndicator.textContent = '🗣️ Speak Mode - Reading Practice';
+                } else {
+                    this.modeIndicator.className = 'mode-indicator waiting-mode';
+                    this.modeIndicator.textContent = '⏳ Ready for Recording & Speaking';
+                }
+            }
+
+            updateProgress() {
+                const progress = (this.currentStep / this.totalSteps) * 100;
+                this.progressFill.style.width = `${progress}%`;
+                
+                if (this.currentMode === 'listen') {
+                    this.progressText.textContent = `Listen: ${this.currentSentence + 1}/${this.sentences.length}`;
+                } else if (this.currentMode === 'speak') {
+                    this.progressText.textContent = `Speak: ${this.currentSentence + 1}/${this.sentences.length}`;
+                } else {
+                    this.progressText.textContent = 'Listen mode complete - Ready to record!';
+                }
+            }
+
+            completeVideo() {
+                this.isPlaying = false;
+                this.progressFill.style.width = '100%';
+                this.progressText.textContent = 'Reading Practice Complete! 🎉';
+                this.completionMessage.style.display = 'block';
+                this.startBtn.disabled = false;
+                this.startBtn.textContent = '🔄 Start New Practice';
+                
+                if (this.isRecording) {
+                    this.stopRecording();
+                }
+                
+                this.listenModeComplete = false;
+                this.recordBtn.disabled = true;
+                this.recordBtn.className = 'camera-btn record-btn';
+                this.recordBtn.textContent = '🔴 Start Recording & Speak Mode';
+                
+                setTimeout(() => {
+                    this.clearAllHighlights();
+                    this.videoArea.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 2000);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new LionStoryVideo();
+        });
+    </script>
+</body>
+</html>
