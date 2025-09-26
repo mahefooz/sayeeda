@@ -314,8 +314,8 @@
                 </a>
 
                 <!-- Task 3: Coming Soon -->
-                <div class="task-card coming-soon">
-                    <div class="status-badge status-coming">🔜 Soon</div>
+                <a href="#" class="task-card available" onclick="openPaintBrushStory()">
+                    <div class="status-badge status-available">✅ Ready</div>
                     <div class="task-icon">🌟</div>
                     <h3 class="task-title">The Magic Paintbrush</h3>
                     <p class="task-description">
@@ -325,7 +325,7 @@
                         <span class="grade-badge">Grade 3</span>
                         <span class="difficulty">⭐⭐ Medium</span>
                     </div>
-                </div>
+                </a>
 
                 <!-- Task 4: Coming Soon -->
                 <div class="task-card coming-soon">
@@ -413,6 +413,14 @@
             
             // For demo purposes, just highlight the card
             console.log('Opening The Kind Lion story...');
+        }
+
+        function openPaintBrushStory() {
+            // In a real implementation, this would navigate to the sparrow story page
+            window.location.href = 'paintbrush-story.html';
+            
+            // For demo purposes, just highlight the card
+            console.log('Opening The Magic Paintbrush story...');
         }
 
         // Add click animations
