@@ -328,8 +328,8 @@
                 </a>
 
                 <!-- Task 4: Coming Soon -->
-                <div class="task-card coming-soon">
-                    <div class="status-badge status-coming">🔜 Soon</div>
+                <a href="#" class="task-card available" onclick="openHelpfulDragonStory()">
+                    <div class="status-badge status-available">✅ Ready</div>
                     <div class="task-icon">🏰</div>
                     <h3 class="task-title">The Helpful Dragon</h3>
                     <p class="task-description">
@@ -339,7 +339,7 @@
                         <span class="grade-badge">Grade 3</span>
                         <span class="difficulty">⭐⭐ Medium</span>
                     </div>
-                </div>
+                </a>
 
                 <!-- Task 5: Coming Soon -->
                 <div class="task-card coming-soon">
@@ -421,6 +421,14 @@
             
             // For demo purposes, just highlight the card
             console.log('Opening The Magic Paintbrush story...');
+        }
+
+        function openHelpfulDragonStory() {
+            // In a real implementation, this would navigate to the sparrow story page
+            window.location.href = 'dragon-story.html';
+            
+            // For demo purposes, just highlight the card
+            console.log('Opening The Helpful Dragon story...');
         }
 
         // Add click animations
