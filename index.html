@@ -342,8 +342,8 @@
                 </a>
 
                 <!-- Task 5: Coming Soon -->
-                <div class="task-card coming-soon">
-                    <div class="status-badge status-coming">🔜 Soon</div>
+                <a href="#" class="task-card available" onclick="openOceanAdventureStory()">
+                    <div class="status-badge status-available">✅ Ready</div>
                     <div class="task-icon">🌊</div>
                     <h3 class="task-title">The Ocean Adventure</h3>
                     <p class="task-description">
@@ -353,7 +353,7 @@
                         <span class="grade-badge">Grade 3</span>
                         <span class="difficulty">⭐⭐⭐ Hard</span>
                     </div>
-                </div>
+                </a>
 
                 <!-- Task 6: Coming Soon -->
                 <div class="task-card coming-soon">
@@ -429,6 +429,14 @@
             
             // For demo purposes, just highlight the card
             console.log('Opening The Helpful Dragon story...');
+        }
+
+        function openOceanAdventureStory() {
+            // In a real implementation, this would navigate to the sparrow story page
+            window.location.href = 'ocean-story.html';
+            
+            // For demo purposes, just highlight the card
+            console.log('Opening The Ocean Adventure story...');
         }
 
         // Add click animations
